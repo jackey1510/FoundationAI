@@ -1,29 +1,3 @@
-import sys
-
-"""
-Start State (@ is the agent)
------------------
-|   |   | A |   |
------------------
-|   |   |   |   |
------------------
-| B |   |   |   |
------------------
-|   | C |   | @ |
------------------
-
-Goal State
------------------
-|   |   |   |   |
------------------
-|   | A |   |   |
------------------
-|   | B |   |   |
------------------
-|   | C |   |   | (agent can be anywhere)
------------------
-"""
-
 class Node:
 	def __init__(self, state, parent, move, depth):
 		# Contains the state of the node
@@ -139,7 +113,6 @@ def bfs(start):
 	nodes.append( create_node( start, None, None, 0 ) )
 	print 'Start'
 	while True:
-		
 		# We've run out of states, no solution.
 		if len( nodes ) == 0: return None
 		# take the node from the front of the queue
@@ -192,6 +165,7 @@ def ids(start):
 		if is_goal(node.state):
 			print('Goal! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
+			print('Nodes visited: ' + str(visited))
 			display_board(node.state)
 			moves = []
 			temp = node
@@ -207,6 +181,7 @@ def ids(start):
 			count += len(expanded_nodes)
 			expanded_nodes.extend( nodes )
 			nodes = expanded_nodes
+			visited += 1
 			
 		# We've run out of states, no solution.
 		# Increse depth_limit
@@ -214,6 +189,58 @@ def ids(start):
 			depth_limit += 1
 			#print('Searching depth '+str(depth_limit))
 			nodes.append( create_node( start, None, None, 0 ) )
+			
+def astar(start, goal):
+	"""Performs a breadth first search from the start state to the goal"""
+	# A list (can act as a queue) for the nodes.
+	nodes = []
+	count = 0
+	visited = 0
+	# Create the queue with the root node in it.
+	nodes.append( create_node( start, None, None, 0, heuristic(start, goal) ) )
+	print 'Start'
+	while True:
+		
+		# We've run out of states, no solution.
+		if len( nodes ) == 0: return None
+		# take the node with the least heuristic value
+		node = nodes.pop(nodes.index(min(nodes, key = attrgetter('heuristic'))))
+		if count%1000 == 0:
+			print ('No.of nodes expanded: '+str(count))
+			#display_board(node.state)
+		# Append the move we made to moves
+		# if this node is the goal, return the moves it took to get here.
+		
+		if is_goal(node.state, goal):
+			print('Goal! The search depth is '+str(node.depth))
+			print('Nodes expanded:' + str(count))
+			print('Nodes visited: ' + str(visited))
+			display_board(node.state)
+			moves = []
+			temp = node
+			while True:
+				moves.insert(0, temp.move)
+				if temp.depth == 1: 
+					break
+				temp = temp.parent
+			return moves			
+		# Expand the node and add all the expansions to the front of the stack
+		else:
+			expanded_nodes = expand_node( node, goal )
+			nodes.extend( expanded_nodes )
+			#nodes = sorted( nodes, key=attrgetter('heuristic','depth'))
+			visited += 1
+			count += len(expanded_nodes)
+			
+def heuristic(state, goal):
+	if state != None:
+		A = state.index('A')
+		B = state.index('B')
+		C = state.index('C')
+		dist = abs(A%4-goal['A']%4)+abs(A/4-goal['A']/4)+abs(B%4-goal['B']%4)+abs(B/4-goal['B']/4)+abs(C%4-goal['C']%4)+abs(C/4-goal['C']/4)
+		return dist
+	else:
+		return None
 
 			
 		
@@ -229,15 +256,3 @@ def main():
 
 if __name__ == "__main__":
 	main();
-	
-	
-	
-
-		
-
-	
-
-
-		
-
-		
