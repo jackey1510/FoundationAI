@@ -1,0 +1,96 @@
+C:\Users\user\Desktop\ecs\ai\FoundationAI>bfs.py
+Performing depth first search
+start
+-----------------
+|   |   | A |   |
+-----------------
+|   |   |   |   |
+-----------------
+| B |   |   |   |
+-----------------
+|   | C |   | @ |
+-----------------
+-----------------
+|   |   |   |   |
+-----------------
+|   | A |   |   |
+-----------------
+|   | B | @ |   |
+-----------------
+|   | C |   |   |
+-----------------
+Total 29386 steps
+Nodes expanded: 29386
+None
+Performing breadth first search
+Start
+-----------------
+|   |   | A |   |
+-----------------
+|   |   |   |   |
+-----------------
+| B |   |   |   |
+-----------------
+|   | C |   | @ |
+-----------------
+No.of nodes expanded: 0
+Goal! The search depth is 10
+Nodes expanded:95440
+Nodes visited: 29495
+-----------------
+|   |   |   |   |
+-----------------
+|   | A |   |   |
+-----------------
+| @ | B |   |   |
+-----------------
+|   | C |   |   |
+-----------------
+['up', 'up', 'left', 'up', 'left', 'down', 'right', 'down', 'left', 'left']
+
+
+
+
+Iterative deepening search
+Start
+Goal! The search depth is 10
+Nodes expanded:95440
+Nodes visited: 42700
+-----------------
+|   |   |   |   |
+-----------------
+|   | A |   |   |
+-----------------
+| @ | B |   |   |
+-----------------
+|   | C |   |   |
+-----------------
+['up', 'up', 'left', 'up', 'left', 'down', 'right', 'down', 'left', 'left']
+
+
+
+
+A* search
+Start
+-----------------
+|   |   | A |   |
+-----------------
+|   |   |   |   |
+-----------------
+| B |   |   |   |
+-----------------
+|   | C |   | @ |
+-----------------
+Goal! The search depth is 10
+Nodes expanded:8641
+Nodes visited: 2678
+-----------------
+|   |   |   |   |
+-----------------
+|   | A |   |   |
+-----------------
+| @ | B |   |   |
+-----------------
+|   | C |   |   |
+-----------------
+['up', 'up', 'left', 'up', 'left', 'down', 'right', 'down', 'left', 'left']
