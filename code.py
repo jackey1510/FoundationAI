@@ -2,17 +2,7 @@ import random
 from operator import attrgetter
 
 """
-Start State (@ is the agent)
------------------
-|   |   | A |   |
------------------
-|   |   |   |   |
------------------
-| B |   |   |   |
------------------
-|   | C |   | @ |
------------------
-
+This code solves the "Blocksworld Tiles Puzzle"
 Goal State
 -----------------
 |   |   |   |   |
@@ -46,7 +36,7 @@ def expand(node, goal):
 	new_name = node.name
 	
 	if up:
-		expanded_nodes.append(Node(new_name+'.u', up, node, "up", new_depth, new_depth + heuristic( up, goal)))
+		expanded_nodes.append(Node(new_name+'.up', up, node, "up", new_depth, new_depth + heuristic( up, goal)))
 	if down:
 		expanded_nodes.append(Node(new_name+'.down', down, node, "down", new_depth, new_depth + heuristic( down, goal)))
 	if left:
@@ -126,110 +116,121 @@ def solution(node):
 			temp = temp.parent
 	return moves
 		
-def dfs_random(start, goal):
+def dfs_random(start, goal, show_board, show_order):
 	state = start
-	moveCount = 0
+	count = 0
 	moveList = list()
 	print 'start'
-	display(state)
+	if show_board:
+		display(state)
 	order = ['root'] # visiting order
 	while not is_goal(state,goal):
 		nextMove=getNextMove(state.index('@'))
-		#order.append(order[len(order)-1]+'.'+nextMove)
+		if show_order:
+			order.append(order[len(order)-1]+'.'+nextMove)
 		moveList.append(nextMove)
 		state=move(state,nextMove)
-		moveCount+=1
+		count+=1
 	print('End')
-	display(state)
-	print ('Goal! The search Depth is: '+str(moveCount))
-	print('Total '+str(moveCount)+' steps')
-	print('Nodes expanded: '+str(moveCount))
+	if show_board:
+		display(state)
+	print ('Goal! The search Depth is: '+str(count))
+	print('Total '+str(count)+' steps')
+	print('Nodes expanded: '+str(count))
 	print ('Solution Checking')
-	if solution_check(start, goal, moveList):
-		#print('The first 10 visiting order is: ')
-		#for i in xrange(10):
-			#print(order[i])
-		#return moveList
-		return moveCount
+	if solution_check(start, goal, moveList, show_board):
+		if show_order:
+			print('The first 10 visiting order is: ')
+			for i in xrange(10):
+				print(order[i])
+		return count # Return the number of nodes expanded
 	
-def dfs_limit(start,goal, depth_limit):
+def dfs_limit(start,goal, depth_limit, show_board, show_order):
 	nodes = [] # Node stack
 	count = 0 # Number of nodes expanded
 	visited = 0 # Number of nodes visited
 	order = [] # pop order
 	nodes.append(Node('root', start, None, None, 0, heuristic(start, goal))) # Root
 	print 'Start'
-	display(start)
+	if show_board:
+		display(start)
 	while True:
 		if len(nodes) == 0: 
 			print('No solution! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
-			print('The search order is:')
-			print(order)
+			if show_order:
+				print('The search order is:')
+				print(order)
 			return None #No solution
 		node = nodes.pop() #Pop the top node
-		order.append(node.name) # Record the visiting order
+		if show_order:
+			order.append(node.name) # Record the visiting order
 		visited += 1
 		if is_goal(node.state, goal):
 			print('End')
-			display(node.state)
+			if show_board:
+				display(node.state)
 			print('Goal! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
-			#print('The search order is:')
-			#print(order)
+			if show_order:
+				print('The search order is:')
+				print(order)
 			moves=solution(node)
 			print ('Solution Checking')
-			if solution_check(start, goal, moves):
+			if solution_check(start, goal, moves, show_board):
 				return moves			
 		expanded_nodes = []
 		if node.depth < depth_limit: #Expand only if the node is less than the depth limit
 			expanded_nodes = (expand(node, goal))# expand
-			nodes.extend(expanded_nodes) #put the expanded node at the top of the stack
-			#nodes = expanded_nodes 			
+			nodes.extend(expanded_nodes) #put the expanded node at the top of the stack			
 			count += len(expanded_nodes)
 			
-def bfs(start, goal):
+def bfs(start, goal, show_board, show_order):
 	nodes = [] # Node queue
 	count = 0 # Number of nodes expanded
 	visited = 0 # Number of nodes visited
 	order = [] # pop order
 	nodes.append(Node('root', start, None, None, 0, heuristic(start, goal))) # Root
 	print 'Start'
-	display(start)
+	if show_board:
+		display(start)
 	while True:
 		if len(nodes) == 0: 
 			print('No solution! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
 			print('The search order is:')
-			print(order)
+			if show_order:
+				print(order)
 			return None #No solution
 		for i in xrange(len(nodes)): # Check if there is solution in the nodes
-			order.append(nodes[i].name) # Record the visiting order
+			if show_order:
+				order.append(nodes[i].name) # Record the visiting order
 			visited += 1
 			if is_goal(nodes[i].state, goal):
 				print('End')
-				display(nodes[i].state)
+				if show_board:
+					display(nodes[i].state)
 				print('Goal! The search depth is '+str(nodes[i].depth))
 				print('Nodes expanded:' + str(count))
 				print('Nodes visited: ' + str(visited))
-				#print('The search order is:')
-				#print(order)
+				if show_order:
+					print('The search order is:')
+					print(order)
 				moves=solution(nodes[i])
 				print ('Solution Checking')
-				if solution_check(start, goal, moves):
+				if solution_check(start, goal, moves, show_board):
 					return moves
 		expanded_nodes = []
 		while len(nodes) > 0: # Pop and expand until there is no nodes
 			node = nodes.pop(0)
 			expanded_nodes.extend(expand( node, goal ))
-			#display(node.state)
 		count += len(expanded_nodes)
 		nodes.extend( expanded_nodes )
 			
-def ids(start, goal):
+def ids(start, goal, show_board, show_order):
 	nodes = [] # Node stack
 	count = 0 # Number of nodes expanded
 	visited = 0 # Number of nodes visited
@@ -237,28 +238,31 @@ def ids(start, goal):
 	order = [] # pop order
 	nodes.append(Node('root', start, None, None, 0, heuristic(start, goal))) # Root
 	print 'Start'
-	display(start)
+	if show_board:
+		display(start)
 	while True:
 		node = nodes.pop() #Pop the top node
-		order.append(node.name) # Record the visiting order
+		if show_order:
+			order.append(node.name) # Record the visiting order
 		visited += 1
 		if is_goal(node.state, goal):
 			print('End')
-			display(node.state)
+			if show_board:
+				display(node.state)
 			print('Goal! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
-			#print('The search order is:')
-			#print(order)
+			if show_order:
+				print('The search order is:')
+				print(order)
 			moves=solution(node)
 			print ('Solution Checking')
-			if solution_check(start, goal, moves):
+			if solution_check(start, goal, moves, show_board):
 				return moves				
 		expanded_nodes = []
 		if node.depth < depth_limit: #Expand only if the node is less than the depth limit
 			expanded_nodes = (expand(node, goal))# expand
-			nodes.extend(expanded_nodes) #put the expanded node at the top of the stack
-			#nodes = expanded_nodes 			
+			nodes.extend(expanded_nodes) #put the expanded node at the top of the stack		
 			count += len(expanded_nodes)
 		if len(nodes) == 0:  # No solution. Increse depth_limit
 			depth_limit += 1
@@ -266,51 +270,41 @@ def ids(start, goal):
 			
 
 
-def astar(start, goal):
+def astar(start, goal, show_board, show_order):
 	nodes = [] # Node queue
 	count = 0 # Number of nodes expanded
 	visited = 0 # Number of nodes visited
 	order = [] # pop order
 	nodes.append(Node('root', start, None, None, 0, heuristic(start, goal))) # Root
 	print 'Start'
-	display(start)
-	"""while True:
-		if len(nodes) == 0: return None
-		for i in xrange(len(nodes)): # Check if there is solution in the nodes
-			if is_goal(nodes[i].state, goal):
-				print('Goal! The search depth is '+str(nodes[i].depth))
-				print('Nodes expanded:' + str(count))
-				print('Nodes visited: ' + str(visited))
-				display(nodes[i].state)
-				return solution(nodes[i])				
-		expanded_nodes = []
-		node = nodes.pop(nodes.index(min(nodes, key = attrgetter('heuristic')))) # Pop and expand the node with the best heuristic estimated cost
-		expanded_nodes.extend(expand(node, goal))
-		visited += 1
-		count += len(expanded_nodes)
-		nodes.extend(expanded_nodes)"""
+	if show_board:
+		display(start)
 	while True:
 		if len(nodes) == 0: 
 			print('No solution! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
-			print('The search order is:')
-			print(order)
+			if show_order:
+				print('The search order is:')
+				print(order)
 			return None #No solution
 		node = nodes.pop(nodes.index(min(nodes, key = attrgetter('heuristic')))) # Pop and expand the node with the least estimated cost
-		order.append(node.heuristic) # Record the visiting order
+		if show_order:
+			order.append(node.heuristic) # Record the visiting order
 		visited += 1
 		if is_goal(node.state, goal): #check if the node poped is the goal
 			print('End')
-			display(node.state)
+			if show_board:
+				display(node.state)
 			print('Goal! The search depth is '+str(node.depth))
 			print('Nodes expanded:' + str(count))
 			print('Nodes visited: ' + str(visited))
-			#print('The order of the estimated cost of the nodes visited is:')
-			#print(order)
+			if show_order:
+				print('The order of the estimated cost of the nodes visited is:')
+				print(order)
 			moves=solution(node)
 			print ('Solution Checking')
-			if solution_check(start, goal, moves):
+			if solution_check(start, goal, moves, show_board):
 				return moves				
 		expanded_nodes = []
 		expanded_nodes.extend(expand(node, goal)) #expand
@@ -327,16 +321,18 @@ def heuristic(state, goal): #Sum of the Manhattan Distance between A B C in the 
 	else:
 		return None
 		
-def solution_check(start, goal, solution):
+def solution_check(start, goal, solution, show_board):
 	if is_goal(start,goal):
 		print ('The solution is correct')
 		return True
 	if solution:
 		state = start
-		#display(state)
+		if show_board:
+			display(state)
 		for i in xrange(len(solution)):
 			state = move(state, solution[i])
-			#display(state)
+			if show_board:
+				display(state)
 		if is_goal(state,goal):
 			print ('The solution is correct')
 			return True
@@ -347,71 +343,60 @@ def solution_check(start, goal, solution):
 		print('No solution')
 		return False
 		
-def avg(start,goal):
+def avg(start,goal, times, show_board, show_order):
 	count = 0
-	for i in xrange(100):
-		count+=dfs_random(start,goal)
-	avg = count//100
-	print 'The average is',
+	for i in xrange(times):
+		count+=dfs_random(start,goal, show_board, show_order)
+	avg = count//times
 	return avg
 	
 
 		
 		
 def main():
-	#start = [' ',' ',' ',' ',' ','A',' ',' ','B',' ',' ','@',' ','C',' ',' '] # Distance from goal is 3
+	start = [' ',' ',' ',' ',' ','A',' ',' ','B',' ',' ','@',' ','C',' ',' '] # Distance from goal is 3
 	#start = [' ',' ',' ','@',' ','A',' ',' ','B',' ',' ',' ',' ','C',' ',' '] # Distance from goal is 5
 	#start = [' ',' ','A',' ',' ',' ','@',' ','B',' ',' ',' ',' ','C',' ',' '] # Distance from goal is 7
 	#start = [' ',' ','A',' ',' ',' ',' ',' ','B',' ',' ',' ',' ','C','@',' '] # Distance from goal is 9
 	#start = [' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ','C',' ','@'] # Distance from goal is 11
 	#start = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A','B','C','@'] # Distance from goal is 14
-	start = ['A','B','C',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@'] # Distance from goal is 14
-	#start = [' ',' ',' ',' ',' ','A',' ',' ',' ','B',' ','@',' ','C',' ',' ']
+	#start = ['A','B','C',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@'] # Distance from goal is 14
 	goal = {'A':5, 'B':9, 'C':13}
-	#print(avg(start, goal))
-	"""print ('Randomized depth first search')
-	solution=(dfs_random(start, goal))
-	#print 'The solution is: ',
-	#print solution
-	print('\n')"""
+	show_board = False # display the board if True
+	show_order = False # show the visiting order if True
 	
-	"""print ('Depth-first search with depth limit')
-	solution=(dfs_limit(start, goal, 20))
+	print ('Randomized depth first search')
+	average=(avg(start, goal, 100, show_board, show_order))
+	print 'The average is',
+	print(average)
+	print('\n')
+	
+	print ('Depth-first search with depth limit')
+	solution=(dfs_limit(start, goal, 20, show_board, show_order))
 	print 'The solution is: ',
 	print solution
 	print('\n')
 	
 	print ('Performing breadth first search')
-	solution=(bfs(start, goal))
+	solution=(bfs(start, goal, show_board, show_order))
 	print 'The solution is: ',
 	print solution
 	print('\n')
 	
 	print ('Iterative deepening search')
-	solution=(ids(start, goal))
-	print 'The solution is: ',
-	print solution
-	print('\n')"""
-	
-	print ('A* search')
-	solution=(astar(start, goal))
+	solution=(ids(start, goal, show_board, show_order))
 	print 'The solution is: ',
 	print solution
 	print('\n')
-
+	
+	print ('A* search')
+	solution=(astar(start, goal, show_board, show_order))
+	print 'The solution is: ',
+	print solution
+	print('\n')
+	return False
 	
 
 if __name__ == "__main__":
 	main();
-	
-	
-	
 
-		
-
-	
-
-
-		
-
-		
