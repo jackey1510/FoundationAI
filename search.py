@@ -385,19 +385,19 @@ def main():
 	solution=(bfs(start, goal))
 	print 'The solution is: ',
 	print solution
-	print('\n')
+	print('\n')"""
 	
 	print ('Iterative deepening search')
 	solution=(ids(start, goal))
 	print 'The solution is: ',
 	print solution
-	print('\n')"""
+	print('\n')
 	
-	print ('A* search')
+	"""print ('A* search')
 	solution=(astar(start, goal))
 	print 'The solution is: ',
 	print solution
-	print('\n')
+	print('\n')"""
 
 	
 

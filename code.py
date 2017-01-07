@@ -360,12 +360,12 @@ def main():
 	#start = [' ',' ','A',' ',' ',' ',' ',' ','B',' ',' ',' ',' ','C','@',' '] # Distance from goal is 9
 	#start = [' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ','C',' ','@'] # Distance from goal is 11
 	#start = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A','B','C','@'] # Distance from goal is 14
-	#start = ['A','B','C',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@'] # Distance from goal is 14
+	start = ['A','B','C',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@'] # Distance from goal is 
 	goal = {'A':5, 'B':9, 'C':13}
 	show_board = False # display the board if True
 	show_order = False # show the visiting order if True
 	
-	print ('Randomized depth first search')
+	"""print ('Randomized depth first search')
 	average=(avg(start, goal, 100, show_board, show_order))
 	print 'The average is',
 	print(average)
@@ -381,7 +381,7 @@ def main():
 	solution=(bfs(start, goal, show_board, show_order))
 	print 'The solution is: ',
 	print solution
-	print('\n')
+	print('\n')"""
 	
 	print ('Iterative deepening search')
 	solution=(ids(start, goal, show_board, show_order))
@@ -389,12 +389,12 @@ def main():
 	print solution
 	print('\n')
 	
-	print ('A* search')
+	"""print ('A* search')
 	solution=(astar(start, goal, show_board, show_order))
 	print 'The solution is: ',
 	print solution
 	print('\n')
-	return False
+	return False"""
 	
 
 if __name__ == "__main__":

@@ -1,3 +1,4 @@
+import random
 """
 [ ][ ][ ][ ][ ][ ][ ] 0
 [ ][ ][ ][ ][ ][ ][ ] 1
@@ -19,64 +20,52 @@ class Node:
 	def __repr__(self):
 		return repr((self.state, self.parent, self.move, self.depth, self.alpha, self.beta, self.side))
 	
-def expand(node, goal, side):
+def expand(node):
+	side = node.side
+	opponent = ' '
+	if side == 'O':
+		opponent = 'X'
+	if side == 'X':
+		opponent = 'O'
 	expanded_nodes = []
 	new_depth = node.depth + 1
-	new_name = node.name
-	col0 = move(node.state, 0, side)
-	col1 = move(node.state, 1, side)
-	col2 = move(node.state, 2, side)
-	col3 = move(node.state, 3, side)
-	col4 = move(node.state, 4, side)
-	col5 = move(node.state, 5, side)
-	col6 = move(node.state, 6, side)
+	col0 = list(move(node.state, 0, side))
+	col1 = list(move(node.state, 1, side))
+	col2 = list(move(node.state, 2, side))
+	col3 = list(move(node.state, 3, side))
+	col4 = list(move(node.state, 4, side))
+	col5 = list(move(node.state, 5, side))
+	col6 = list(move(node.state, 6, side))
 	col = [col0, col1, col2, col3, col4, col5, col6]
-	for i in xrange(6):
+	for i in xrange(7):
 		if col[i]:
-			expanded_nodes.append(Node(col[i], node, i, new_depth, new_depth))
+			expanded_nodes.append(Node(col[i], node, i, new_depth, -100000, 100000, opponent))
 	return expanded_nodes
 
-def alphabeta(start, side):
-	nodes = [] # Node stack
-	count = 0 # Number of nodes expanded
-	visited = 0 # Number of nodes visited
-	nodes.append(Node(start, None, None, 0, float("-inf"), float("inf"), side)) # Root
-	print 'Start'
-	display(start)
-	while True:
-		if len(nodes) == 0: 
-			print('No solution! The search depth is '+str(node.depth))
-			print('Nodes expanded:' + str(count))
-			print('Nodes visited: ' + str(visited))
-			print('The search order is:')
-			print(order)
-			return None #No solution
-		node = nodes.pop() #Pop the top node
-		order.append(node.name) # Record the visiting order
-		visited += 1
-		if is_goal(node.state, goal):
-			display(node.state)
-			moves=solution(node)
-			print ('Solution Checking')		
-		expanded_nodes = []
-		if node.depth < depth_limit: #Expand only if the node is less than the depth limit
-			expanded_nodes = (expand(node, goal))# expand
-			nodes.extend(expanded_nodes) #put the expanded node at the top of the stack			
-			count += len(expanded_nodes)
+def getNextMove(state):
+	no_of_moves = len(legal_move(state))
+	col=random.randint(0,no_of_moves)
+	return col
 
-def move(state, col, side):
-	new_state = state[:]
-	if col < 7:
+def actmove(state, col, side):
+	new_state = list(state)
+	print 'New state:'
+	print new_state
+	if col < 7: # sanity check
 		for i in xrange(6):
 			if new_state[5-i][col] == ' ':
 				new_state[5-i][col] = side
 				return new_state
 	return None
-
+	
 def eval(state, side):
+	opponent = ''
+	if side == 'O':
+		opponent = 'X'
+	if side == 'X':
+		opponent = 'O'
 	score = 0
-	if win(state, side):
-		score = 1000
+	opponent_score = 0
 	if zugzwang(state, side):
 		score = 100
 	if threat(state, side) == 1:
@@ -85,16 +74,25 @@ def eval(state, side):
 		score = 50
 	if counter_perfect_start(state, side):
 		score = 50
-	score += connect2(state, side)*2 + sepearated2(state,side)
-	return score
+	if threat == 0:
+		score += connect2(state, side)*2 + sepearated2(state,side)
+	if win(state, side):
+		score = 1000
 
-def pos(state, side):
-	position = []
-	for row in xrange(6):
-		for col in xrange(7):
-			if state[row][col] == side:
-				position.append([row,col])
-	return position
+	if zugzwang(state, opponent):
+		opponent_score = 100
+	if threat(state, opponent) == 1:
+		opponent_score = 10
+	if perfect_start(state, opponent):
+		opponent_score = 50
+	if counter_perfect_start(state, opponent):
+		opponent_score = 50
+	if threat == 0:
+		opponent_score += connect2(state, opponent)*2 + sepearated2(state,opponent)
+	if win(state, opponent):
+		opponent_score = 1000
+	return score-opponent_score
+
 
 def sepearated2(state, side): # 2 sepearated men with nothing in between that can form threat
 	case1 = [side, ' ', side]
@@ -149,7 +147,7 @@ def connect2(state, side): # 2 connected already with space next to it
 					con2 += 1
 	for i in xrange(4): # Vertically
 		for j in xrange(7):
-			for k in xrange(4):
+			for k in xrange(2):
 				if [state[i][j], state[i+1][j], state[i+2][j]] == c2[k]:
 					con2 += 1
 	for i in xrange(4): # Top left to bottom right 
@@ -159,7 +157,7 @@ def connect2(state, side): # 2 connected already with space next to it
 					con2 += 1
 	for i in xrange(4): # Bottom left to top right
 		for j in xrange(5):
-			for k in xrange(4):
+			for k in xrange(2):
 				if [state[i][6-j], state[i+1][5-j], state[i+2][4-j]] == c2[k]:
 					con2 += 1
 	return con2
@@ -230,9 +228,6 @@ def counter_perfect_start(state, side):
 	                                                                 [' ',' ',' ',opponent,side,' ',' ']]:
 		return True
 	return False
-				  
-
-
 
 def win(state=[],side=''):
 	connect4 = [side,side,side,side]
@@ -256,31 +251,122 @@ def win(state=[],side=''):
 			if [state[i][6-j], state[i+1][5-j], state[i+2][4-j], state[i+3][3-j]] == connect4:
 				return True
 	return False
+
+def legal_move(state): # check if there is any empty slot in the board
+	new_state = state[:]
+	legal=[]
+	for col in xrange (7):
+		for i in xrange(6):
+			if new_state[i][col] == ' ':
+				legal.append(col)
+	legal=list(set(legal)) # remove duplicate
+	return legal
+		
+	
+def cutoff(state, depth, ply):
+	if depth == ply:
+		return True
+	if not legal_move(state):
+		return True
+	return False
+
+def alphabeta(node, ply):
+	if cutoff(node.state, node.depth, ply): 
+		return (eval(node.state, node.side), None)
+	best = None
+	expanded_nodes = expand(node)
+	for i in xrange(len(expanded_nodes)):
+		child_node = expanded_nodes.pop()
+		value = alphabeta(child_node, ply)
+		if node.side == 'O': # side of alphabeta AI
+			if value > node.alpha:
+				node.alpha = value
+				best = child_node.move
+			if node.beta <= node.alpha:
+				return best #beta cutoff
+		if node.side == 'X': # side of opponent
+			if value < node.beta:
+				node.beta = value
+				best = child_node.move
+			if node.beta <= node.alpha: 
+				return best #alpha cutoff
+		 
 	
 def display(state):
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[0][0], state[0][1], state[0][2], state[0][3], state[0][4], state[0][5], state[0][6])
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[1][0], state[1][1], state[1][2], state[1][3], state[1][4], state[1][5], state[1][6])
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[2][0], state[2][1], state[2][2], state[2][3], state[2][4], state[2][5], state[2][6])
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[3][0], state[3][1], state[3][2], state[3][3], state[3][4], state[3][5], state[3][6])
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[4][0], state[4][1], state[4][2], state[4][3], state[4][4], state[4][5], state[4][6])
-	print '[{}][{}][{}][{}][{}][{}][{}]'.format(state[5][0], state[5][1], state[5][2], state[5][3], state[5][4], state[5][5], state[5][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 0'.format(state[0][0], state[0][1], state[0][2], state[0][3], state[0][4], state[0][5], state[0][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 1'.format(state[1][0], state[1][1], state[1][2], state[1][3], state[1][4], state[1][5], state[1][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 2'.format(state[2][0], state[2][1], state[2][2], state[2][3], state[2][4], state[2][5], state[2][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 3'.format(state[3][0], state[3][1], state[3][2], state[3][3], state[3][4], state[3][5], state[3][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 4'.format(state[4][0], state[4][1], state[4][2], state[4][3], state[4][4], state[4][5], state[4][6])
+	print '[{}][{}][{}][{}][{}][{}][{}] 5'.format(state[5][0], state[5][1], state[5][2], state[5][3], state[5][4], state[5][5], state[5][6])
+	print ' 0  1  2  3  4  5  6  '
 	print '\n'
-			
-	
 
-def main():
+def game():
 	start = [ [' ',' ',' ',' ',' ',' ',' '],
 	          [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
-			  ['X','X','X','X',' ',' ',' ']]
-	print(start[5][4])
-	display(start)
-	print threat(start,'X')
+			  [' ',' ',' ',' ',' ',' ',' ']]
+	state = list(start)
+	player1 = 'O' # ai player
+	player2 = 'X' # random player
+	depth = 0
+	root = Node(start, None, None, depth, float("-inf"), float("inf"), player1)
+	node = root
+	ply = 2
+	print state
+	for i in xrange(21):
+		print legal_move(state)
+		p1move = alphabeta(node, ply)
+		state = move(state, p1move, player1)
+		print 'Player 1 put a man in column %i'%(p1move)
+		display(state)
+		p2move = getNextMove(state)
+		state = move(state, p2move, player2)
+		print 'Player 2 put a man in column %i'%(p2move)
+		display(state)
+		depth += 1
+		node = Node(state, None, p1move, depth, float("-inf"), float("inf"), player1)
+	if win(state, player1):
+		print 'Player 1 won!'
+	elif win(state, player2):
+		print 'Player 2 won!'
+	else:
+		print 'Draw'
+	
+
+def main():
+	"""start = [ [' ',' ',' ',' ',' ',' ',' '],
+	          [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ','X',' ',' ',' '],
+			  [' ',' ',' ','X','X',' ',' '],
+			  ['X','X',' ','X',' ',' ',' ']]
+	start = [ [' ',' ',' ',' ',' ',' ',' '],
+	          [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' ']]
+	state = list(start)
 	side = 'X'
+	state = move(state, 1, side)
+	display(state)
+	print 'Threats: ',
+	print threat(start, side)
+	print 'Connect2: ',
+	print connect2(start, side)
+	print 'Separated2: ',
+	print sepearated2(start, side)
+	print 'Zugzwang: ',
+	print zugzwang(start, side)
+	print 'Score: ',
+	print eval(start, side)
 	if win(start, side):
-		print 'Player '+side + ' wins'
+		print 'Player '+side + ' wins'"""
+	game()
 	return False
 
 if __name__ == "__main__":
