@@ -365,7 +365,7 @@ def main():
 	#start = [' ',' ','A',' ',' ',' ',' ',' ','B',' ',' ',' ',' ','C','@',' '] # Distance from goal is 9
 	#start = [' ',' ','A',' ',' ',' ',' ',' ',' ',' ','B',' ',' ','C',' ','@'] # Distance from goal is 11
 	#start = [' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','A','B','C','@'] # Distance from goal is 14
-	start = ['A','B','C',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','@'] # Distance from goal is 14
+	start = ['A','B',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ',' ','C','@'] # Distance from goal is 14
 	#start = [' ',' ',' ',' ',' ','A',' ',' ',' ','B',' ','@',' ','C',' ',' ']
 	goal = {'A':5, 'B':9, 'C':13}
 	#print(avg(start, goal))
