@@ -413,9 +413,6 @@ def alphabeta(state, depth, alpha, beta, side, ply):
 			alpha = min(alpha, alphabeta(move(state,legal_move(state)[i], side),depth+1, alpha, beta, opponent, ply))
 			if beta <= alpha: break
 			return beta"""
-
-#def alphabeta(state, depth, alpha, beta, side, ply):
-	
 		
 	
 def display(state):
@@ -428,11 +425,12 @@ def display(state):
 	print ' 0  1  2  3  4  5  6  '
 	print '\n'
 
-def game(ply1, ply2, games):
+def mutigame(ply1, ply2, games):
+	p1win = 0
+	p2win = 0
+	draw = 0
+	p1first = True
 	for i in xrange(games):
-		p1win = 0
-		p2win = 0
-		draw = 0
 		start = [ [' ',' ',' ',' ',' ',' ',' '],
 				  [' ',' ',' ',' ',' ',' ',' '],
 				  [' ',' ',' ',' ',' ',' ',' '],
@@ -447,26 +445,46 @@ def game(ply1, ply2, games):
 		depth = 0
 		root = Node(state, None, None, depth, -infinity, infinity, player1)
 		node = root
-		print 'player1 is ply%i and player2 is ply%i'%(ply1, ply2)
+		print 'player 1 is ply %i and player 2 is ply %i'%(ply1, ply2)
 		#print state
 		while legal_move(state) and not win(state, player1) and not win(state, player2):
-			if not win(state, player2):
-				node = Node(state, None, None, depth, float("-inf"), float("inf"), player1)
-				#print legal_move(state)
-				p1move = alphabeta_node(node, ply1)[1]
-				#p1move = alphabeta(state, 0, -infinity, infinity, player1, ply)[1]
-				#print (p1move)
-				state = move(state, p1move, player1)
-				print 'Player 1 put a man in column %i'%(p1move)
-				display(state)
-			if not win(state, player1):
-				node = Node(state, None, None, depth, float("-inf"), float("inf"), player2)
-				# p2move = alphabeta(state, 0, -infinity, infinity, player2, 1)[1]
-				p2move = alphabeta_node(node, ply2)[1]
-				#p2move= getNextMove(state)
-				state = move(state, p2move, player2)
-				print 'Player 2 put a man in column %i'%(p2move)
-				display(state)
+			if p1first:
+				if not win(state, player2):
+					node = Node(state, None, None, depth, float("-inf"), float("inf"), player1)
+					#print legal_move(state)
+					p1move = alphabeta_node(node, ply1)[1]
+					#p1move = alphabeta(state, 0, -infinity, infinity, player1, ply)[1]
+					#print (p1move)
+					state = move(state, p1move, player1)
+					print 'Player 1 put a man in column %i'%(p1move)
+					display(state)
+				if not win(state, player1):
+					node = Node(state, None, None, depth, float("-inf"), float("inf"), player2)
+					# p2move = alphabeta(state, 0, -infinity, infinity, player2, 1)[1]
+					p2move = alphabeta_node(node, ply2)[1]
+					#p2move= getNextMove(state)
+					state = move(state, p2move, player2)
+					print 'Player 2 put a man in column %i'%(p2move)
+					display(state)
+			else:
+				if not win(state, player1):
+					node = Node(state, None, None, depth, float("-inf"), float("inf"), player2)
+					# p2move = alphabeta(state, 0, -infinity, infinity, player2, 1)[1]
+					p2move = alphabeta_node(node, ply2)[1]
+					#p2move= getNextMove(state)
+					state = move(state, p2move, player2)
+					print 'Player 2 put a man in column %i'%(p2move)
+					display(state)
+				if not win(state, player2):
+					node = Node(state, None, None, depth, float("-inf"), float("inf"), player1)
+					#print legal_move(state)
+					p1move = alphabeta_node(node, ply1)[1]
+					#p1move = alphabeta(state, 0, -infinity, infinity, player1, ply)[1]
+					#print (p1move)
+					state = move(state, p1move, player1)
+					print 'Player 1 put a man in column %i'%(p1move)
+					display(state)
+				
 				
 		if win(state, player1):
 			print 'Player 1 won!'
@@ -477,6 +495,7 @@ def game(ply1, ply2, games):
 		else:
 			print 'Draw'
 			draw += 1
+		p1first = not p1first
 	return (p1win, p2win, draw)
 	
 
@@ -516,7 +535,36 @@ def main():
 		print 'Player '+side + ' wins'
 	print eval(state)
 	print eval2(state)"""
-	game(3,1,20)
+	
+	print '1 vs 2'
+	r1 = mutigame(1,2,20) 
+	print '1 vs 3'
+	r2 = mutigame(1,3,20)
+	print '1 vs 4'
+	r3 = mutigame(1,4,20)
+	print '1 vs 5'
+	r4 = mutigame(1,5,20)
+	
+	print '2 vs 3'
+	r5 = mutigame(2,3,20)
+	print '2 vs 4'
+	r6 = mutigame(2,4,20)
+	print '2 vs 5'
+	r7 = mutigame(2,5,20)
+	
+	print '3 vs 4'
+	r8 = mutigame(3,4,20)
+	print '3 vs 5'
+	r9 = mutigame(3,5,20)
+	
+	print '4 vs 5'
+	r10 = mutigame(4,5,20)
+	
+	result = [r1, r2, r3, r4, r5, r6 ,r7, r8, r9, r10]
+	print result
+	
+	
+	#print ('player 1 won %i times and player 2 won %i times, %i draws'%(result[0], result[1], result[2]))
 	return False
 
 if __name__ == "__main__":
