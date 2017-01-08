@@ -1,4 +1,6 @@
 import random
+from random import shuffle
+import copy
 """
 [ ][ ][ ][ ][ ][ ][ ] 0
 [ ][ ][ ][ ][ ][ ][ ] 1
@@ -29,41 +31,38 @@ def expand(node):
 		opponent = 'O'
 	expanded_nodes = []
 	new_depth = node.depth + 1
-	col0 = list(move(node.state, 0, side))
-	col1 = list(move(node.state, 1, side))
-	col2 = list(move(node.state, 2, side))
-	col3 = list(move(node.state, 3, side))
-	col4 = list(move(node.state, 4, side))
-	col5 = list(move(node.state, 5, side))
-	col6 = list(move(node.state, 6, side))
+	col0 = move(node.state, 0, side)
+	col1 = move(node.state, 1, side)
+	col2 = move(node.state, 2, side)
+	col3 = move(node.state, 3, side)
+	col4 = move(node.state, 4, side)
+	col5 = move(node.state, 5, side)
+	col6 = move(node.state, 6, side)
 	col = [col0, col1, col2, col3, col4, col5, col6]
 	for i in xrange(7):
 		if col[i]:
-			expanded_nodes.append(Node(col[i], node, i, new_depth, -100000, 100000, opponent))
+			expanded_nodes.append(Node(col[i], i, new_depth, -100000, 100000, opponent))
 	return expanded_nodes
 
 def getNextMove(state):
 	no_of_moves = len(legal_move(state))
-	col=random.randint(0,no_of_moves)
+	col = random.randint(0,no_of_moves-1)
 	return col
 
-def actmove(state, col, side):
-	new_state = list(state)
-	print 'New state:'
-	print new_state
+def move(state, col, side):
+	new_state = copy.deepcopy(state)
 	if col < 7: # sanity check
 		for i in xrange(6):
 			if new_state[5-i][col] == ' ':
 				new_state[5-i][col] = side
 				return new_state
-	return None
 	
-def eval(state, side):
-	opponent = ''
-	if side == 'O':
-		opponent = 'X'
-	if side == 'X':
-		opponent = 'O'
+	return None
+	raise NotImplementedError()
+	
+def eval(state):
+	side = 'O'
+	opponent = 'X'
 	score = 0
 	opponent_score = 0
 	if zugzwang(state, side):
@@ -72,12 +71,13 @@ def eval(state, side):
 		score = 10
 	if perfect_start(state, side):
 		score = 50
-	if counter_perfect_start(state, side):
-		score = 50
-	if threat == 0:
+	# if counter_perfect_start(state, side):
+		# score = 50
+	if threat(state, side) == 0:
 		score += connect2(state, side)*2 + sepearated2(state,side)
 	if win(state, side):
-		score = 1000
+		score = 10000
+	#return score
 
 	if zugzwang(state, opponent):
 		opponent_score = 100
@@ -85,13 +85,48 @@ def eval(state, side):
 		opponent_score = 10
 	if perfect_start(state, opponent):
 		opponent_score = 50
-	if counter_perfect_start(state, opponent):
+	# if counter_perfect_start(state, opponent):
+		# opponent_score = 50
+	if threat(state, opponent) == 0:
+		opponent_score += connect2(state, opponent)*2 + sepearated2(state,opponent)
+	if win(state, opponent):
+		opponent_score = 10000
+	final_score = score - opponent_score*1.5
+	return final_score
+	
+def eval2(state):
+	opponent = 'O'
+	side = 'X'
+	score = 0
+	opponent_score = 0
+	if zugzwang(state, side):
+		score = 100
+	if threat(state, side) == 1:
+		score = 10
+	if perfect_start(state, side):
+		score = 50
+	#if counter_perfect_start(state, side):
+		# score = 50
+	if threat(state, side) == 0:
+		score += connect2(state, side)*2 + sepearated2(state,side)
+	if win(state, side):
+		score = 1000
+	#return score
+
+	if zugzwang(state, opponent):
+		opponent_score = 100
+	if threat(state, opponent) == 1:
+		opponent_score = 10
+	if perfect_start(state, opponent):
 		opponent_score = 50
-	if threat == 0:
+	# if counter_perfect_start(state, opponent):
+		# opponent_score = 50
+	if threat(state, opponent) == 0:
 		opponent_score += connect2(state, opponent)*2 + sepearated2(state,opponent)
 	if win(state, opponent):
 		opponent_score = 1000
-	return score-opponent_score
+	final_score = score - opponent_score
+	return final_score
 
 
 def sepearated2(state, side): # 2 sepearated men with nothing in between that can form threat
@@ -209,25 +244,25 @@ def perfect_start(state, side):
 		return True
 	return False
 
-def counter_perfect_start(state, side):
+# def counter_perfect_start(state, side):
 	
-	if side == 'O':
-		opponent = 'X'
-	if side == 'X':
-		opponent = 'O'
-	if state == [ [' ',' ',' ',' ',' ',' ',' '],
-	              [' ',' ',' ',' ',' ',' ',' '],
-			      [' ',' ',' ',' ',' ',' ',' '],
-			      [' ',' ',' ',' ',' ',' ',' '],
-			      [' ',' ',' ',' ',' ',' ',' '],
-			      [' ',' ',side,opponent,' ',' ',' ']] or state == [ [' ',' ',' ',' ',' ',' ',' '],
-	                                                                 [' ',' ',' ',' ',' ',' ',' '],
-	                                                                 [' ',' ',' ',' ',' ',' ',' '],
-	                                                                 [' ',' ',' ',' ',' ',' ',' '],
-	                                                                 [' ',' ',' ',' ',' ',' ',' '],
-	                                                                 [' ',' ',' ',opponent,side,' ',' ']]:
-		return True
-	return False
+	# if side == 'O':
+		# opponent = 'X'
+	# if side == 'X':
+		# opponent = 'O'
+	# if state == [ [' ',' ',' ',' ',' ',' ',' '],
+	              # [' ',' ',' ',' ',' ',' ',' '],
+			      # [' ',' ',' ',' ',' ',' ',' '],
+			      # [' ',' ',' ',' ',' ',' ',' '],
+			      # [' ',' ',' ',' ',' ',' ',' '],
+			      # [' ',' ',side,opponent,' ',' ',' ']] or state == [ [' ',' ',' ',' ',' ',' ',' '],
+	                                                                 # [' ',' ',' ',' ',' ',' ',' '],
+	                                                                 # [' ',' ',' ',' ',' ',' ',' '],
+	                                                                 # [' ',' ',' ',' ',' ',' ',' '],
+	                                                                 # [' ',' ',' ',' ',' ',' ',' '],
+	                                                                 # [' ',' ',' ',opponent,side,' ',' ']]:
+		# return True
+	# return False
 
 def win(state=[],side=''):
 	connect4 = [side,side,side,side]
@@ -253,13 +288,13 @@ def win(state=[],side=''):
 	return False
 
 def legal_move(state): # check if there is any empty slot in the board
-	new_state = state[:]
 	legal=[]
-	for col in xrange (7):
-		for i in xrange(6):
-			if new_state[i][col] == ' ':
-				legal.append(col)
-	legal=list(set(legal)) # remove duplicate
+	if not win(state, 'O') and not win(state, 'X'): # If a player has won already you cannot move
+		for col in xrange (7):
+			for i in xrange(6):
+				if state[i][col] == ' ':
+					legal.append(col)
+		legal=list(set(legal)) # remove duplicate
 	return legal
 		
 	
@@ -269,28 +304,119 @@ def cutoff(state, depth, ply):
 	if not legal_move(state):
 		return True
 	return False
+	
+def sum_score(node):
+	nd = node
+	score = eval(nd.state)
+	while nd.parent:
+			temp = nd.parent
+			score += eval(temp.state)
+			nd = temp
+	return score
+		
 
-def alphabeta(node, ply):
+def alphabeta_node(node, ply):
+	side = node.side
+	if side == 'O':
+		opponent = 'X'
+	if side == 'X':
+		opponent = 'O'
 	if cutoff(node.state, node.depth, ply): 
-		return (eval(node.state, node.side), None)
+		#print '1. eval: ',
+		#print eval(node.state)
+		#print sum_score(node)
+		return (sum_score(node), None)
 	best = None
-	expanded_nodes = expand(node)
-	for i in xrange(len(expanded_nodes)):
-		child_node = expanded_nodes.pop()
-		value = alphabeta(child_node, ply)
-		if node.side == 'O': # side of alphabeta AI
-			if value > node.alpha:
-				node.alpha = value
-				best = child_node.move
-			if node.beta <= node.alpha:
-				return best #beta cutoff
-		if node.side == 'X': # side of opponent
-			if value < node.beta:
-				node.beta = value
-				best = child_node.move
-			if node.beta <= node.alpha: 
-				return best #alpha cutoff
-		 
+	legal = legal_move(node.state)
+	shuffle(legal)
+	if node.side == 'O': # side of alphabeta AI
+		for i in xrange(len(legal)):
+			action = legal[i]
+			child_node = Node(move(node.state, action, node.side), node, action, node.depth+1, node.alpha, node.beta, opponent)
+			#print '2. Child :',
+			#print child_node
+			value = alphabeta_node(child_node, ply)
+			#print '3. Value: ',
+			#print value
+			if value[0] > node.alpha:
+				node.alpha = value[0]
+				best = action
+			if node.beta <= node.alpha: break
+		return (node.alpha, best) #beta cutoff
+	
+	if node.side == 'X': # side of opponent
+		for i in xrange(len(legal)):
+			action = legal[i]
+			child_node = Node(move(node.state, action, node.side), node, action, node.depth+1, node.alpha, node.beta, opponent)
+			#print '2. Child :',
+			#print child_node
+			value = alphabeta_node(child_node, ply)
+			if value[0] < node.beta:
+				node.beta = value[0]
+				best = action
+			if node.beta <= node.alpha: break
+		return (node.beta, best) #alpha cutoff
+				
+def alphabeta(state, depth, alpha, beta, side, ply):
+	if side == 'O':
+		opponent = 'X'
+	if side == 'X':
+		opponent = 'O'
+	if cutoff(state, depth, ply):
+		#print 'depth: ',
+		#print depth
+		score = eval(state)
+		print score
+		#display(state)
+		return (score, None)
+	best = None 
+	if side == 'O':
+		for i in xrange(len(legal_move(state))):
+			action = legal_move(state)[i]
+			child = move(state, action, side)
+			value = alphabeta(child, depth+1, alpha, beta, opponent, ply)
+			#print value
+			if value[0] > alpha:
+				alpha = value[0]
+				best = action
+			if beta <= alpha: break
+		return (alpha, best)
+	if side ==  'X':
+		for i in xrange(len(legal_move(state))):
+			action = legal_move(state)[i]
+			child = move(state, action, side)
+			value = alphabeta(child, depth+1, alpha, beta, opponent, ply)
+			if value[0] < beta:
+				beta = value[0]
+				best = action
+			if beta <= alpha: break
+		return (beta, best)
+		
+		
+
+
+"""def alphabeta(state, depth, alpha, beta, side, ply):
+	if side == 'O':
+		opponent = 'X'
+	if side == 'X':
+		opponent = 'O'
+	if cutoff(state, depth, ply):
+		print eval(state, side)
+		return eval(state, side)
+	if side == 'O':
+		for i in xrange(len(legal_move(state))):
+			beta = max(beta, alphabeta(move(state,legal_move(state)[i], side),depth+1, alpha, beta, opponent, ply))
+			if beta <= alpha: break
+			return alpha
+	if side == 'X':
+		for i in xrange(len(legal_move(state))):
+			alpha = min(alpha, alphabeta(move(state,legal_move(state)[i], side),depth+1, alpha, beta, opponent, ply))
+			if beta <= alpha: break
+			return beta"""
+
+#def alphabeta(state, depth, alpha, beta, side, ply):
+	
+		
 	
 def display(state):
 	print '[{}][{}][{}][{}][{}][{}][{}] 0'.format(state[0][0], state[0][1], state[0][2], state[0][3], state[0][4], state[0][5], state[0][6])
@@ -302,57 +428,80 @@ def display(state):
 	print ' 0  1  2  3  4  5  6  '
 	print '\n'
 
-def game():
-	start = [ [' ',' ',' ',' ',' ',' ',' '],
-	          [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ',' ',' ',' ',' ']]
-	state = list(start)
-	player1 = 'O' # ai player
-	player2 = 'X' # random player
-	depth = 0
-	root = Node(start, None, None, depth, float("-inf"), float("inf"), player1)
-	node = root
-	ply = 2
-	print state
-	for i in xrange(21):
-		print legal_move(state)
-		p1move = alphabeta(node, ply)
-		state = move(state, p1move, player1)
-		print 'Player 1 put a man in column %i'%(p1move)
-		display(state)
-		p2move = getNextMove(state)
-		state = move(state, p2move, player2)
-		print 'Player 2 put a man in column %i'%(p2move)
-		display(state)
-		depth += 1
-		node = Node(state, None, p1move, depth, float("-inf"), float("inf"), player1)
-	if win(state, player1):
-		print 'Player 1 won!'
-	elif win(state, player2):
-		print 'Player 2 won!'
-	else:
-		print 'Draw'
+def game(ply1, ply2, games):
+	for i in xrange(games):
+		p1win = 0
+		p2win = 0
+		draw = 0
+		start = [ [' ',' ',' ',' ',' ',' ',' '],
+				  [' ',' ',' ',' ',' ',' ',' '],
+				  [' ',' ',' ',' ',' ',' ',' '],
+				  [' ',' ',' ',' ',' ',' ',' '],
+				  [' ',' ',' ',' ',' ',' ',' '],
+				  [' ',' ',' ',' ',' ',' ',' ']]
+		infinity = 10000000
+		state = list(start)
+		start = []
+		player1 = 'O' # ai player
+		player2 = 'X' # random player
+		depth = 0
+		root = Node(state, None, None, depth, -infinity, infinity, player1)
+		node = root
+		print 'player1 is ply%i and player2 is ply%i'%(ply1, ply2)
+		#print state
+		while legal_move(state) and not win(state, player1) and not win(state, player2):
+			if not win(state, player2):
+				node = Node(state, None, None, depth, float("-inf"), float("inf"), player1)
+				#print legal_move(state)
+				p1move = alphabeta_node(node, ply1)[1]
+				#p1move = alphabeta(state, 0, -infinity, infinity, player1, ply)[1]
+				#print (p1move)
+				state = move(state, p1move, player1)
+				print 'Player 1 put a man in column %i'%(p1move)
+				display(state)
+			if not win(state, player1):
+				node = Node(state, None, None, depth, float("-inf"), float("inf"), player2)
+				# p2move = alphabeta(state, 0, -infinity, infinity, player2, 1)[1]
+				p2move = alphabeta_node(node, ply2)[1]
+				#p2move= getNextMove(state)
+				state = move(state, p2move, player2)
+				print 'Player 2 put a man in column %i'%(p2move)
+				display(state)
+				
+		if win(state, player1):
+			print 'Player 1 won!'
+			p1win += 1
+		elif win(state, player2):
+			print 'Player 2 won!'
+			p2win += 1
+		else:
+			print 'Draw'
+			draw += 1
+	return (p1win, p2win, draw)
 	
 
 def main():
 	"""start = [ [' ',' ',' ',' ',' ',' ',' '],
 	          [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ','X',' ',' ',' '],
-			  [' ',' ',' ','X','X',' ',' '],
-			  ['X','X',' ','X',' ',' ',' ']]
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' ']]
+	start = [ [' ',' ',' ',' ',' ',' ',' '],
+	          [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ',' ',' ',' ',' '],
+			  [' ',' ',' ','X','O',' ',' '],
+			  [' ','O','O','O','O',' ',' '],
+			  ['X','X','O','X','X',' ',' ']]
 	start = [ [' ',' ',' ',' ',' ',' ',' '],
 	          [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
 			  [' ',' ',' ',' ',' ',' ',' '],
-			  [' ',' ',' ',' ',' ',' ',' ']]
+			  [' ',' ',' ','O',' ',' ',' ']]
 	state = list(start)
 	side = 'X'
-	state = move(state, 1, side)
+	start = move(state, 1, side)
 	display(state)
 	print 'Threats: ',
 	print threat(start, side)
@@ -362,11 +511,12 @@ def main():
 	print sepearated2(start, side)
 	print 'Zugzwang: ',
 	print zugzwang(start, side)
-	print 'Score: ',
-	print eval(start, side)
+	print connect2(start, "O")
 	if win(start, side):
-		print 'Player '+side + ' wins'"""
-	game()
+		print 'Player '+side + ' wins'
+	print eval(state)
+	print eval2(state)"""
+	game(3,1,20)
 	return False
 
 if __name__ == "__main__":
